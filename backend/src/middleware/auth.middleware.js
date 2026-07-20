@@ -1,0 +1,36 @@
+const foodPartnerModel = require("../models/foodpartner.model")
+const jwt = require("jsonwebtoken")
+
+
+async function foodPartnerMiddleware(req,res,next){
+  const token = req.cookies.token
+
+  if(!token){
+    return res.status(401).json({
+      message:"Login is required"
+    })
+  }
+
+  try{
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    //decoded={id} in object form
+    const foodPartner = await foodPartnerModel.findById(decoded.id)
+
+    req.foodPartner = foodPartner
+    next()
+
+  }
+  catch(err){
+
+    return res.status(401).json({
+      message:"token not found"
+    })
+
+  }
+
+}
+
+module.exports = {
+  foodPartnerMiddleware
+}
