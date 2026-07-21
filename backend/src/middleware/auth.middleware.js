@@ -1,4 +1,5 @@
 const foodPartnerModel = require("../models/foodpartner.model")
+const userModel = require("../models/user.model")
 const jwt = require("jsonwebtoken")
 
 
@@ -16,6 +17,7 @@ async function foodPartnerMiddleware(req,res,next){
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
     //decoded={id} in object form
     const foodPartner = await foodPartnerModel.findById(decoded.id)
+    // here whole data is detched becaz findById 
 
     req.foodPartner = foodPartner
     next()
@@ -31,6 +33,34 @@ async function foodPartnerMiddleware(req,res,next){
 
 }
 
+async function userMiddleware(req,res,next){
+  const token = req.cookies.token
+
+  if(!token){
+    return res.status(400).json({
+      message:"Invalid user token"
+    })
+  }
+
+  try{
+    const decoded = jwt.verify(token,process.env.JWT_SECRET)
+    const user = await userModel.findById(decoded.id)
+
+    req.user = user
+
+    next()
+
+  }
+  catch(err){
+
+    return res.status(400).json({
+      message:"Invalid user token, token not found"
+    })
+
+  }
+}
+
 module.exports = {
-  foodPartnerMiddleware
+  foodPartnerMiddleware,
+  userMiddleware
 }
