@@ -17,7 +17,7 @@ router.post("/", authMiddleware.foodPartnerMiddleware, upload.single("video"), f
 // make sure the name video matches with the video keyword when provided from frontend
 
 /**
- * GET /api/foof - Protected
+ * GET /api/food - Protected
  */
 router.get("/",authMiddleware.userMiddleware,foodController.getFoodItems)
 

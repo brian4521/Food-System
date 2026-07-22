@@ -1,7 +1,31 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const UserRegister = () => {
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const firstName = e.target.firstName.value.trim();
+    const lastName = e.target.lastName.value.trim();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    const fullName = [firstName, lastName].filter(Boolean).join(" ");
+
+    const response = await axios.post(
+      "http://localhost:3000/api/auth/user/register",
+      {
+        fullName,
+        email,
+        password,
+      },
+      { withCredentials: true },
+    );
+
+    console.log(response.data);
+
+    navigate("/");
+  };
   return (
     <div className="app-shell">
       <main className="auth-card">
@@ -21,7 +45,7 @@ const UserRegister = () => {
           </div>
         </div>
 
-        <form className="auth-form" noValidate>
+        <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-row">
             <label className="form-group">
               <span>First name</span>
@@ -45,7 +69,7 @@ const UserRegister = () => {
             />
           </label>
 
-          <button type="button" className="auth-action">
+          <button type="submit" className="auth-action">
             Register
           </button>
         </form>
