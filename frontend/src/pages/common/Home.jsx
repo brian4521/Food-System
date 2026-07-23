@@ -1,39 +1,68 @@
-import React from "react";
-
-const videos = [
-  {
-    id: 1,
-    src: "https://ik.imagekit.io/qvibcgnr3/1b50a766-9ef3-4029-b34b-aae8f2b58727_N0WNFvUfx",
-    description:
-      "Freshly grilled tacos with bold sauces, crunchy slaw, and a late-night flavor punch that keeps customers coming back.",
-    storeURL: "https://example.com/tacos",
-  },
-  {
-    id: 2,
-    src: "https://ik.imagekit.io/qvibcgnr3/1b50a766-9ef3-4029-b34b-aae8f2b58727_N0WNFvUfx",
-    description:
-      "Sugar-free treats, creamy panna cotta, and handcrafted pastries served in a dreamy pastel setup.",
-    storeURL: "https://example.com/desserts",
-  },
-  {
-    id: 3,
-    src: "https://ik.imagekit.io/qvibcgnr3/1b50a766-9ef3-4029-b34b-aae8f2b58727_N0WNFvUfx",
-    description:
-      "Juicy smash burgers, crispy fries, and a cozy dining atmosphere made for your next comfort-food craving.",
-    storeURL: "https://example.com/burgers",
-  },
-];
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Home = () => {
+  const navigate = useNavigate();
+  const [videos, setVideos] = useState([]);
+  const videoRefs = useRef(new Map());
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target;
+          if ((!video) instanceof HTMLVideoElement) return;
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            // Autoplay visible video
+            video.play().catch(() => {
+              /* ignore autoplay errors */
+            });
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: [0.5] },
+    );
+
+    videoRefs.current.forEach((video) => {
+      observer.observe(video);
+    });
+
+    return () => {
+      videoRefs.current.forEach((video) => {
+        observer.unobserve(video);
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/api/food", { withCredentials: true })
+      .then((response) => {
+        console.log(response.data);
+        setVideos(response.data.foodItems);
+      })
+      .catch((err) => {
+        console.log("error while fetching fooditems", err);
+      });
+  }, []);
+
   return (
-    <main className="home-feed">
-      {videos.map((video) => (
-        <section key={video.id} className="feed-slide">
+    <main className="home-feed" ref={containerRef}>
+      {videos.map((food) => (
+        <section key={food._id} className="feed-slide">
           <video
+            ref={(el) => {
+              if (el) videoRefs.current.set(food._id, el);
+            }}
             className="feed-video"
-            src={video.src}
-            autoPlay
+            src={food.video}
             muted
+            autoPlay
             loop
             playsInline
             preload="metadata"
@@ -41,15 +70,15 @@ const Home = () => {
 
           <div className="feed-overlay">
             <div className="feed-content">
-              <p>{video.description}</p>
-              <a
-                href={video.storeURL}
+              <p>{food.description}</p>
+              <Link
+                to={"/food-partner/" + food.foodPartner}
                 target="_blank"
                 rel="noreferrer"
                 className="visit-store-btn"
               >
                 Visit Store
-              </a>
+              </Link>
             </div>
           </div>
         </section>

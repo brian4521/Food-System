@@ -3,6 +3,7 @@ const cookieParser = require("cookie-parser")
 const cors = require("cors")
 const authRoute = require("./routes/auth.routes")
 const foodRoute = require("./routes/food.routes")
+const foodPartnerRoute = require("./routes/food-partner.routes")
 const app = express()
 
 app.use(cookieParser())
@@ -18,6 +19,7 @@ app.get("/",(req,res)=>{
 
 app.use("/api/auth",authRoute)
 app.use("/api/food",foodRoute)
+app.use("/api/food-partner",foodPartnerRoute)
 
 
 
